@@ -1,0 +1,12 @@
+name: Simple_hist
+title: Simple_hist
+username:
+account: gmcgurk
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1011018
+bundleId: 2198278
+url: https://gmcgurk.shinyapps.io/Simple_hist/
+when: 1562189140.06896
+asMultiple: FALSE
+asStatic: FALSE
