@@ -22,12 +22,14 @@ ui <- fluidPage(
               label = "Choose a variable to display",
               choices = c("Level_in", "Level_in_clipped"),
               selected = "Level_in"),
+  #potential date slider instead of calendar, I think calendar is better though
+ # sliderInput("range", 
+           #   label = "Date Range:",
+             # min = 0, max = 100, value = c(0, 100)),
   
-  sliderInput("range", 
-              label = "Date Range:",
-              min = 0, max = 100, value = c(0, 100)),
-  
-  
+  dateRangeInput("daterange1", "Date range:",
+                 start = "2015-05-01",
+                 end   = "2018-9-30"),
   
   mainPanel(plotOutput("plot"))
 )
@@ -42,8 +44,8 @@ server <- function(input, output) {
                     "Level_in_clipped" = data$Level_in_clipped)
     
     
-    
-    plot(data$date.time, param , type = "l")
+  
+    plot(data$date.time, param , type = "l", xlim = c( input$daterange1[1] ,input$daterange1[2]),ylim = c(0,15))
   })
 }
 
