@@ -1,9 +1,7 @@
-#install.packages("zoo")
-library(zoo)
+#global variables go here
 
 in.file= read.csv("Data/CAR-072-Flow.csv")
 data=in.file
-data.ts=zoo(data)
 
 data$X=as.character(data$X)
 
@@ -11,7 +9,7 @@ data$date.time=as.Date(data$X, format="%Y-%m-%d %H:%M:%S")   #this is still form
 
 data$date.time[1:20]
 
-#plot below is what we're going for
+#plot below is the template of what we're going for
 plot(data$date.time,data$Level_in,type = "l")
 
 # User interface ----
