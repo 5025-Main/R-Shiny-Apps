@@ -1,6 +1,7 @@
+#install.packages("zoo")
 library(zoo)
 
-in.file= read.csv("C:/Users/garrett.mcgurk/Documents/GitHub/R-Shiny-Apps/Test Apps/CAR-072 Flow App/Data/CAR-072-Flow.csv")
+in.file= read.csv("Data/CAR-072-Flow.csv")
 data=in.file
 data.ts=zoo(data)
 
