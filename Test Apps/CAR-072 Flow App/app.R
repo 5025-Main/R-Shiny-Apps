@@ -7,7 +7,7 @@ data.ts=zoo(data)
 
 data$X=as.character(data$X)
 
-data$date.time=as.Date(data$X, format="%m/%d/%Y %H:%M")  #this is still formatting wrong for some reason. Missing times
+data$date.time=as.Date(data$X, format="%Y-%m-%d %H:%M:%S")   #this is still formatting wrong for some reason. Missing times
 
 data$date.time[1:20]
 
