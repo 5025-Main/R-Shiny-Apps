@@ -12,12 +12,11 @@ data=in.file
 
 data$X=as.character(data$X)
 
-data$date.time=as.Date(data$X, format="%Y-%m-%d %H:%M:%S")   #this is still formatting wrong for some reason. Missing times
+#data$date.time=as.Date(data$X, format="%Y-%m-%d %H:%M:%S")   
+data$date.time=strptime(data$X, format="%Y-%m-%d %H:%M:%S") 
+data$date.time = as.POSIXct(data$date.time)
 
-data$date.time[1:20]
 
-#plot below is the template of what we're going for
-plot(data$date.time,data$Level_in,type = "l")
 
 # User interface ----
 
@@ -36,13 +35,19 @@ ui <- fluidPage(
                  start = "2015-05-01",
                  end   = "2018-9-30"),
   
-  mainPanel(plotOutput("plot"))
+  mainPanel(plotOutput("plot",
+                       dblclick = "plot_dblclick",
+                       brush = brushOpts(
+                         id = "plot_brush",
+                         resetOnNew = TRUE)))
   )
 
 
 
 # Server logic ----
 server <- function(input, output) {
+  ranges <- reactiveValues(x = NULL, y = NULL)
+  
   output$plot <- renderPlot({
     param <- switch(input$var, 
                     "Level_in" = "Level_in",
@@ -64,14 +69,27 @@ server <- function(input, output) {
    
     
     # Multiple line plot
-    ggplot(df2, aes(x = date.time, y = value)) + 
+    ggplot(df2, aes(x = as.POSIXct(date.time), y = value)) + 
       geom_line(aes(color = variable), size = 1) +
       scale_color_manual(values = c("#00AFBB", "#E7B800")) +
-      theme_minimal()
+      theme_minimal()+coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
     
     
 })
 
+  observeEvent(input$plot_dblclick, {
+    brush <- input$plot_brush
+    if (!is.null(brush)) {
+      ranges$x <- c(as.POSIXct(brush$xmin,origin = "1970-01-01"), as.POSIXct(brush$xmax,origin = "1970-01-01"))
+     
+      ranges$y <- c(brush$ymin, brush$ymax)
+      
+    } else {
+      ranges$x <- NULL
+      ranges$y <- NULL
+    }
+  })
+  
 }
 
 # Run app ----
