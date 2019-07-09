@@ -30,7 +30,7 @@ ui <- fluidPage(
                  end   = "2018-9-30"),
   
   mainPanel(plotOutput("plot"))
-)
+  )
 
 
 
@@ -38,32 +38,23 @@ ui <- fluidPage(
 server <- function(input, output) {
   output$plot <- renderPlot({
     param <- switch(input$var, 
-                    "Level_in" = data$Level_in,
-                    "Level_in_clipped" = data$Level_in_clipped,
-                    "Flow_gpm"=data$Flow..gpm.,
-                   "Flow_gpm_nostormflow" =data$Flow..gpm..no.stormflow,
-                   "Flow_gpm_USBR" =data$Flow..gpm..USBR)
+                    "Level_in" = "Level_in",
+                    "Level_in_clipped" = "Level_in_clipped",
+                    "Flow_gpm"="Flow..gpm.",
+                   "Flow_gpm_nostormflow" ="Flow..gpm..no.stormflow",
+                   "Flow_gpm_USBR" ="Flow..gpm..USBR")
     
     param2= switch(input$var2, 
-                   "Level_in" = data$Level_in,
-                   "Level_in_clipped" = data$Level_in_clipped,
-                   "Flow_gpm"=data$Flow..gpm.,
-                   "Flow_gpm_nostormflow" =data$Flow..gpm..no.stormflow,
-                   "Flow_gpm_USBR" =data$Flow..gpm..USBR)
+                   "Level_in" = "Level_in",
+                   "Level_in_clipped" = "Level_in_clipped",
+                   "Flow_gpm"="Flow..gpm.",
+                   "Flow_gpm_nostormflow" ="Flow..gpm..no.stormflow",
+                   "Flow_gpm_USBR" ="Flow..gpm..USBR")
   
-    plot(data$date.time, param , type = "l", xlab = "Date",ylab = input$var, xlim = c( input$daterange1[1] ,input$daterange1[2]))
-    lines(data$date.time, param2 , type = "l", col="blue")
-    
-    
-    
-  })
-  
-  output$plot2 <- renderPlot({
     df2 <- data %>%
-      select(date.time, Level_in, Level_in_clipped) %>%
+      select(date.time, param, param2) %>%
       gather(key = "variable", value = "value", -date.time)
-    head(df2, 3)
-    
+   
     
     # Multiple line plot
     ggplot(df2, aes(x = date.time, y = value)) + 
@@ -74,7 +65,7 @@ server <- function(input, output) {
     
 })
 
-
+}
 
 # Run app ----
 shinyApp(ui, server)
