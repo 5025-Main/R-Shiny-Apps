@@ -20,11 +20,11 @@ ui <- fluidPage(
               label = "Choose a variable to display",
               choices = c("Level_in", "Level_in_clipped","Flow_gpm","Flow_gpm_nostormflow","Flow_gpm_USBR"),
               selected = "Level_in"),
-  #potential date slider instead of calendar, I think calendar is better though
- # sliderInput("range", 
-           #   label = "Date Range:",
-             # min = 0, max = 100, value = c(0, 100)),
-  
+  selectInput("var2", 
+              label = "Choose a secondary variable to display",
+              choices = c( "None","Level_in", "Level_in_clipped","Flow_gpm","Flow_gpm_nostormflow","Flow_gpm_USBR"),
+              selected = ""),
+
   dateRangeInput("daterange1", "Date range:",
                  start = "2015-05-01",
                  end   = "2018-9-30"),
@@ -44,9 +44,15 @@ server <- function(input, output) {
                    "Flow_gpm_nostormflow" =data$Flow..gpm..no.stormflow,
                    "Flow_gpm_USBR" =data$Flow..gpm..USBR)
     
-    
+    param2= switch(input$var2, 
+                   "Level_in" = data$Level_in,
+                   "Level_in_clipped" = data$Level_in_clipped,
+                   "Flow_gpm"=data$Flow..gpm.,
+                   "Flow_gpm_nostormflow" =data$Flow..gpm..no.stormflow,
+                   "Flow_gpm_USBR" =data$Flow..gpm..USBR)
   
-    plot(data$date.time, param , type = "l", xlab = "Date",ylab = "Level, in", xlim = c( input$daterange1[1] ,input$daterange1[2]))
+    plot(data$date.time, param , type = "l", xlab = "Date",ylab = input$var, xlim = c( input$daterange1[1] ,input$daterange1[2]))
+    lines(data$date.time, param2 , type = "l", col="blue")
   })
 }
 
