@@ -71,7 +71,9 @@ server <- function(input, output) {
     # Multiple line plot
     ggplot(df2, aes(x = as.POSIXct(date.time), y = value)) + 
       geom_line(aes(color = variable), size = 1) +
-      scale_color_manual(values = c("#00AFBB", "#E7B800")) +
+      scale_color_manual(values = c("#00AFBB", "#E7B800")) + 
+      labs(title="Title",
+           x ="Date", y = param)+
       theme_minimal()+coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
     
     
