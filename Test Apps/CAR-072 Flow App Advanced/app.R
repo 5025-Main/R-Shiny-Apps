@@ -1,3 +1,10 @@
+#packages go here
+
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+theme_set(theme_minimal())
+
 #global variables go here
 
 in.file= read.csv("Data/CAR-072-Flow.csv")
