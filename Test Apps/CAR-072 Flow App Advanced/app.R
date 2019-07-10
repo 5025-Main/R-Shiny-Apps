@@ -5,17 +5,8 @@ library(dplyr)
 library(ggplot2)
 theme_set(theme_minimal())
 
-#global variables go here
+# if we were using global variables, they would go here. This script is using user inputs from the Data/ file, so no need for global va
 
-
-#in.file= read.csv("Data/CAR-072-Flow.csv")
-#data=in.file
-
-#data$X=as.character(data$X)
-
-#data$date.time=as.Date(data$X, format="%Y-%m-%d %H:%M:%S")   
-#data$date.time=strptime(data$X, format="%Y-%m-%d %H:%M:%S") 
-#data$date.time = as.POSIXct(data$date.time)
 
 options(shiny.reactlog=TRUE) 
 
@@ -39,7 +30,7 @@ ui <- fluidPage(
                #  start = "2015-05-01",
                #  end   = "2018-9-30"),
   
-  mainPanel(h4("Brush and double-click to select date range"), plotOutput("plot",
+  mainPanel(h4("Brush and double-click to select date range (Double-click anywhere to reset)"), plotOutput("plot",
                        dblclick = "plot_dblclick",
                        brush = brushOpts(
                          id = "plot_brush",
