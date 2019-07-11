@@ -14,7 +14,7 @@ options(shiny.reactlog=TRUE)
 
 ui <- fluidPage(
   selectInput('selectfile','Select File',choice = list.files('Data/')),
-  selectInput('selectfile2','Select File to compare',choice = list.files('Data/')),
+  selectInput('selectfile2','Select File to compare',choice = list.files('Data/'),selected = "None"),
   
   #selectInput("var", 
              # label = "Choose a variable to display",
@@ -61,10 +61,25 @@ server <- function(input, output) {
   
    })
   
+  mydata2 <- reactive({
+    
+    in.file2 <- input$selectfile2
+    txt.str2= paste('Data/',in.file2,sep = "")
+    data2= read.csv(txt.str2)
+    #data=in.file
+    
+    data2$X=as.character(data2$X)
+    data2$date.time=strptime(data2$X, format="%Y-%m-%d %H:%M:%S") 
+    data2$date.time = as.POSIXct(data2$date.time)
+    return(data2)
+    
+  })
+  
   ranges <- reactiveValues(x = NULL, y = NULL)
   
   output$plot <- renderPlot({
     data.m=mydata() 
+    data.2=mydata2()
     #param <- switch(input$var, 
                   #  "Level_in" = "Level_in",
                   #  "Level_in_clipped" = "Level_in_clipped",
@@ -85,23 +100,38 @@ server <- function(input, output) {
                   # "Flow_gpm_nostormflow" ="Flow..gpm..no.stormflow",
                   # "Flow_gpm_USBR" ="Flow..gpm..USBR")
  
-    
+    dataset1 <- reactive({
     df2 <- data.m %>%
       select(date.time, input$checkGroup) %>%
       gather(key = "variable", value = "value", -date.time) 
+    return(df2)
+    })
+    
+    df2=dataset1()
+    
+    dataset2 <- reactive({
+    df3 <- data.2 %>%
+      select(date.time, input$checkGroup) %>%
+      gather(key = "variable", value = "value", -date.time) 
+    return(df3)
+    })
+    df3=dataset2()
 
     
     # Multiple line plot
     ggplot(df2, aes(x = as.POSIXct(date.time), y = value)) + 
       geom_line(aes(color = variable), size = 1) +
+      geom_line(data = df3, aes(x = as.POSIXct(date.time), y = value))+
+      geom_line(aes(color = variable), size = 1)+
      # scale_color_manual(values = c("#00AFBB", "#E7B800","#E7B800","#E7B800","#E7B800")) + 
-      labs(title=paste("Currently plotting",input$selectfile),
+      labs(title=paste("Plotting",input$selectfile,"and",input$selectfile2),
            x ="Date", y = input$checkGroup)+
       theme_minimal()+coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
     
-    
 })
 
+  
+  ######Server side clicky zoomy function #####
   observeEvent(input$plot_dblclick, {
     brush <- input$plot_brush
     if (!is.null(brush)) {
