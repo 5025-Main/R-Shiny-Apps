@@ -8,6 +8,8 @@ theme_set(theme_minimal())
 # if we were using global variables, they would go here. This script is using user inputs from the Data/ file, so no need for global va
 
 
+
+
 options(shiny.reactlog=TRUE) 
 
 # User interface ----
@@ -118,15 +120,32 @@ server <- function(input, output) {
     df3=dataset2()
 
     
+   # colorvec <- reactive({
+  ##  z=input$checkGroup
+    #return(z)
+   # })
+    
+   # colors=colorvec()
+   # num.colors=length(colors)
+    
+    
+   # mypalette<-brewer.pal(num.colors,"Set1")
+   # mypalette2<-brewer.pal(num.colors,"Set3")
+    
+    
+    
     # Multiple line plot
     ggplot(df2, aes(x = as.POSIXct(date.time), y = value)) + 
+     # scale_color_manual(values = c("#FF0000","#00FF00	","#0000FF"	,"#FFFF00"	,"#00FFFF"))+
       geom_line(aes(color = variable), size = 1) +
+   # scale_color_brewer(palette="Dark2")
       geom_line(data = df3, aes(x = as.POSIXct(date.time), y = value))+
       geom_line(aes(color = variable), size = 1)+
-     # scale_color_manual(values = c("#00AFBB", "#E7B800","#E7B800","#E7B800","#E7B800")) + 
+     # scale_color_manual(values = c("#FF00FF","#C0C0C0	","#800000	"	,"#808000	"	,"#008080	"))+
+      #scale_color_manual(values = c(mypalette2)) + 
       labs(title=paste("Plotting",input$selectfile,"and",input$selectfile2),
            x ="Date", y = input$checkGroup)+
-      theme_minimal()+coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
+      coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
     
 })
 
