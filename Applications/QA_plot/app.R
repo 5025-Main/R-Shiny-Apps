@@ -42,15 +42,9 @@ server <- function(input, output) {
     in.file <- input$selectfile
     site_id=substr(in.file, 0, 7)
    
-    txt.str= paste('Data/Compiled Calibrations/',site_id,'_compiled.csv',sep = "")
+    txt.str= paste('Data/Compiled Calibrations/',site_id,'-compiled.csv',sep = "")
     data= read.csv(txt.str)
-    #data=in.file
-   # class(data$Datetime)
-    
-    #data$X=as.character(data$X)
-   
-    #data$date.time=strptime(data$X, format="%Y-%m-%d %H:%M:%S") 
-    #data$date.time = as.POSIXct(data$date.time)
+
     return(data)
   })
   
@@ -58,9 +52,17 @@ server <- function(input, output) {
     flowpoints=Flow.data() 
     calpoints=Calibration.data()
     
+    df3 <- calpoints %>%
+      select(Datetime,Flow..gpm..no.stormflow, Flow_gpm_1,Flow_gpm_2,Flow_gpm_3) %>%
+      gather(key = "variable", value = "value", -Datetime,-Flow..gpm..no.stormflow) 
+    
   
-    p <- ggplot(calpoints, aes(Flow..gpm..no.stormflow, Flow_gpm_1)) + geom_point()+ geom_abline(intercept=0, slope= 1)
-   ggplotly(p)
+    
+    g <- ggplot(df3, aes(x=Flow..gpm..no.stormflow,y= value, text= paste("Manual Measurement Date :", Datetime )))+geom_point()+geom_abline(intercept=0, slope= 1)
+    
+    
+    ggplotly(g)
+    
     
 })
 }

@@ -5,8 +5,8 @@ account: gmcgurk
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1071599
-bundleId: 2296590
+bundleId: 2305218
 url: https://gmcgurk.shinyapps.io/QA_plot/
-when: 1565131319.97371
+when: 1565380691.80836
 asMultiple: FALSE
 asStatic: FALSE
