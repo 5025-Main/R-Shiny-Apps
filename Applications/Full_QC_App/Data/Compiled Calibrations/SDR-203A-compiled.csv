@@ -1,7 +1,0 @@
-Datetime,Datetime_after,Flow_gpm_1,Flow_gpm_2,Flow_gpm_3,Level_above_V_in_After,Level_above_V_in_Before,Manual Level_in,Predicted_flow_After,Predicted_flow_Before,SITE ID,calculated offset,Level_in,Level_in_clipped,Vnotch(in),CrestWidth(in),Flow (gpm),Flow (gpm) no stormflow,Flow (gpm) USBR,Flow (gpm) USBR no stormflow,Flow (gpm) CTRSC,Flow (gpm) CTRSC no stormflow
-2018-05-14 11:30:00,,0.0,,,,,,,,SDR-203A,,0.08,0.08,8.0,50.0,0.004,0.004,0.004,0.004,0.004,0.004
-2018-05-25 10:35:00,,0.0132085899537,,,,,,,,SDR-203A,,0.07,0.07,8.0,50.0,0.003,0.003,0.003,0.003,0.003,0.003
-2018-06-12 09:35:00,,0.147936207481,,,,,,,,SDR-203A,,0.37,0.37,8.0,50.0,0.187,0.187,0.187,0.187,0.187,0.187
-2018-07-24 10:05:00,,0.0132085899537,,,,,,,,SDR-203A,,0.0,0.0,8.0,50.0,0.0,0.0,0.0,0.0,0.0,0.0
-2018-07-25 08:50:00,,0.110952155611,,,,,,,,SDR-203A,,0.34,0.34,8.0,50.0,0.152,0.152,0.152,0.152,0.152,0.152
-2018-08-07 11:10:00,,0.147936207481,,,,,,,,SDR-203A,,0.22,0.22,8.0,50.0,0.051,0.051,0.051,0.051,0.051,0.051

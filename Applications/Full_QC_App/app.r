@@ -4,29 +4,52 @@
 #
 #packages go here
 library(shiny)
-library(tidyr)
+#library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(plotly)
+library(leaflet)
+library(shinythemes)
 
-theme_set(theme_minimal())
-options(shiny.reactlog=TRUE) 
+
+r_colors <- rgb(t(col2rgb(colors()) / 255))
+names(r_colors) <- colors()
+
+X2019_MS4_Sites <- read_excel("C:/Users/garrett.mcgurk/Desktop/2019_MS4 Sites.xlsx")
+
+sites.2019= X2019_MS4_Sites [c(9,14)]
+sites.2019=as.data.frame(sites.2019)
+
+sites.2019$lng=sapply(strsplit(sites.2019$`ns1:coordinates`,","),"[",1)
+sites.2019$lat=sapply(strsplit(sites.2019$`ns1:coordinates`,","),"[",2)
+
+sites.2019$lng=as.numeric(sites.2019$lng)
+sites.2019$lat=as.numeric(sites.2019$lat)
+
+
+#rmse function
+rmse <- function(error)
+{
+  sqrt(mean(error^2,na.rm=TRUE))
+}
 
 # User interface ----
 
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("superhero"),
   fluidRow(
     column(3,
           
             selectInput('selectfile','Select File',choice = list.files('Data/Flow Data/')),
   
                         checkboxGroupInput("checkGroup", label = h3("Select Parameters for Timeseries plot"),
-                                           c("Level_in" = "Level_in",
-                                             "Level_in_clipped" = "Level_in_clipped",
-                                             "Flow_gpm"="Flow..gpm.",
-                                             "Flow_gpm_nostormflow" ="Flow..gpm..no.stormflow",
-                                             "Flow_gpm_USBR" ="Flow..gpm..USBR"), 
-                                           selected = "Level_in")
+                                           c("Level (in)" = "Level_in",
+                                             "Level Clipped (in)" = "Level_in_clipped",
+                                             "Flow (gpm)"="Flow..gpm.",
+                                             "Flow (gpm) - no stormflow" ="Flow..gpm..no.stormflow",
+                                             "Flow (gpm)- USBR" ="Flow..gpm..USBR"), 
+                                           selected = "Level_in"),
+          
+            leafletOutput("mymap")
     
     ),
   column(9,
@@ -47,8 +70,7 @@ server <- function(input, output) {
     #data=in.file
     
     data$X=as.character(data$X)
-    data$date.time=strptime(data$X, format="%Y-%m-%d %H:%M:%S") 
-    data$date.time = as.POSIXct(data$date.time)
+    data$date.time=as.POSIXct(strptime(data$X, format="%Y-%m-%d %H:%M:%S")) 
     return(data)
     
   })
@@ -64,10 +86,18 @@ server <- function(input, output) {
     return(data)
   })
   
+  site_id <- reactive({
+    
+    in.file <- input$selectfile
+    site_id=substr(in.file, 0, 7)
+    return(site_id)
+  })
+  
  ranges <- reactiveValues(x = NULL, y = NULL)
   
   output$plot <- renderPlotly({
     Flow.plot.data=Flow.data() 
+    site_id=site_id()
    
     Flow.data.long <- reactive({
       df2 <- Flow.plot.data %>%
@@ -87,7 +117,7 @@ server <- function(input, output) {
       geom_line(aes(color = variable), size = 1)+
       # scale_color_manual(values = c("#FF00FF","#C0C0C0	","#800000	"	,"#808000	"	,"#008080	"))+
       #scale_color_manual(values = c(mypalette2)) + 
-      labs(title=paste("Plotting",input$selectfile),
+      labs(title=paste("Plotting site data for",site_id),
            x ="Date", y = input$checkGroup)+
       coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
     ggplotly(hydroplot)
@@ -101,16 +131,42 @@ server <- function(input, output) {
       
       df3 <- calpoints %>%
         select(Datetime,Flow..gpm..no.stormflow, Flow_gpm_1,Flow_gpm_2,Flow_gpm_3) %>%
-        gather(key = "variable", value = "value", -Datetime,-Flow..gpm..no.stormflow) 
+        gather(key = "variable", value = "Manual.meas", -Datetime,-Flow..gpm..no.stormflow) 
       
       
       
-      g <- ggplot(df3, aes(x=Flow..gpm..no.stormflow,y= value, text= paste("Manual Measurement Date :", Datetime )))+geom_point()+geom_abline(intercept=0, slope= 1)
+      error <-df3$Manual.meas- df3$Flow..gpm..no.stormflow
+      
+      rmse.cal=rmse(error)
+      
+      
+      g <- ggplot(df3, aes(x=Flow..gpm..no.stormflow,y= Manual.meas, text= paste("Manual Measurement Date :", Datetime )))+
+        geom_point(color='darkblue')+geom_abline(intercept=0, slope= 1)+
+        labs(x="Flow Predicted (gpm), no stormflow", y="Manual Field Measurement (gpm)")+
+        geom_text(x = 1, y = 2,label=paste("RMSE:",rmse.cal),parse = TRUE)
       
       
       ggplotly(g)
     
   })
+  
+  
+  output$mymap <- renderLeaflet({
+    site_id=site_id()
+    leaflet(sites.2019) %>%addTiles() %>% addMarkers(sites.2019$lng,sites.2019$lat, label = sites.2019$`ns1:name3`) 
+  })
+  
+    center <- reactive({
+      site_id=site_id()
+      site.subset=sites.2019[grep(site_id, sites.2019$`ns1:name3`),]
+      return(site.subset[1,])
+       })
+    
+    observe({
+      leafletProxy('mymap') %>% 
+        setView(lng =  center()$lng, lat = center()$lat, zoom = 18)
+    })
+    
   
 }
 

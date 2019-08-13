@@ -11,6 +11,11 @@ library(plotly)
 theme_set(theme_minimal())
 
 
+rmse <- function(error)
+{
+  sqrt(mean(error^2,na.rm=TRUE))
+}
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
@@ -49,16 +54,28 @@ server <- function(input, output) {
   })
   
   output$plot <- renderPlotly({
-    flowpoints=Flow.data() 
+   
+     flowpoints=Flow.data() 
     calpoints=Calibration.data()
     
     df3 <- calpoints %>%
       select(Datetime,Flow..gpm..no.stormflow, Flow_gpm_1,Flow_gpm_2,Flow_gpm_3) %>%
-      gather(key = "variable", value = "value", -Datetime,-Flow..gpm..no.stormflow) 
+      gather(key = "variable", value = "Manual.meas", -Datetime,-Flow..gpm..no.stormflow) 
     
-  
+   
     
-    g <- ggplot(df3, aes(x=Flow..gpm..no.stormflow,y= value, text= paste("Manual Measurement Date :", Datetime )))+geom_point()+geom_abline(intercept=0, slope= 1)
+   
+    error <-df3$Manual.meas- df3$Flow..gpm..no.stormflow
+    
+    rmse.cal=rmse(error)
+    
+    
+    
+    
+    g <- ggplot(df3, aes(x=Flow..gpm..no.stormflow,y= Manual.meas, text= paste("Manual Measurement Date :", Datetime )))+
+    geom_point()+geom_abline(intercept=0, slope= 1)+
+      labs(x="Flow Predicted (GPM), no stormflow", y="Manual Field Measurement")+
+      geom_text(x = 1, y = 2,label=paste("RMSE:",rmse.cal),parse = TRUE)
     
     
     ggplotly(g)
