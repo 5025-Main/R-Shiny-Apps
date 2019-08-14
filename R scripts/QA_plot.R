@@ -1,10 +1,10 @@
 library(readxl)
-
+library(Metrics)
 library(ggplot2)
 #install.packages("plotly")
 library(plotly) 
 install.packages("Metrics")
-library(Metrics)
+
 
 rm(list = ls())
 #read in flow data

@@ -4,18 +4,21 @@
 #
 #packages go here
 library(shiny)
-#library(tidyr)
+library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(plotly)
 library(leaflet)
 library(shinythemes)
+library(readxl)
+library(Metrics)
 
 
 r_colors <- rgb(t(col2rgb(colors()) / 255))
 names(r_colors) <- colors()
 
-X2019_MS4_Sites <- read_excel("C:/Users/garrett.mcgurk/Desktop/2019_MS4 Sites.xlsx")
+X2019_MS4_Sites <- read_excel("Data/2019_MS4 Sites.xlsx")
+
 
 sites.2019= X2019_MS4_Sites [c(9,14)]
 sites.2019=as.data.frame(sites.2019)
@@ -164,7 +167,7 @@ server <- function(input, output) {
     
     observe({
       leafletProxy('mymap') %>% 
-        setView(lng =  center()$lng, lat = center()$lat, zoom = 18)
+        setView(lng =  center()$lng, lat = center()$lat, zoom = 16)
     })
     
   
