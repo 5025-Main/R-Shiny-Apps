@@ -3,7 +3,7 @@ library(Metrics)
 library(ggplot2)
 #install.packages("plotly")
 library(plotly) 
-install.packages("Metrics")
+#install.packages("Metrics")
 
 
 rm(list = ls())
@@ -24,7 +24,7 @@ cal.data=as.data.frame(cal.data)
 
 SDG.085_compiled <- read.csv("~/GitHub/R-Shiny-Apps/Applications/QA_plot/Data/Compiled Calibrations/SDG-085-compiled.csv")
 
-
+CAR.070.compiled <- read.csv("~/GitHub/R-Shiny-Apps/Applications/Full_QC_App/Data/Compiled Calibrations/CAR-070-compiled.csv")
 
 #plot hydrograph
 plot(data$...1,data$`Flow compound weir stormflow clipped (gpm)`,type="l")
@@ -65,3 +65,25 @@ g <- ggplot(df3, aes(x=Flow..gpm..no.stormflow,y= value, text= paste("Manual Mea
   #geom_point(data = df3, aes(x = Flow..gpm..no.stormflow, y = Flow_gpm_3))
 
 ggplotly(g)
+
+
+
+level.df <- CAR.070.compiled %>%
+  select(Datetime,Level_in_clipped, Level_above_V_in_Before) #%>%
+ # gather(key = "variable", value = "level.in", -Datetime) 
+return(df3)
+
+CAR.070.compiled$Level_above_V_in_Before
+CAR.070.compiled$Level_in_clipped
+
+
+ # x= level above v, y = offset in
+
+h <- ggplot(level.df, aes(x=Level_above_V_in_Before,y= Level_in_clipped, text= paste("Manual Measurement Date :", Datetime )))+geom_point()+
+  geom_abline(intercept=0, slope= 1)#+
+ # geom_text(x = 3, y = 15,label=rmse.cal,parse = TRUE)
+
+
+ggplotly(h)
+
+

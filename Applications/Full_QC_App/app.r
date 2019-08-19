@@ -36,13 +36,16 @@ rmse <- function(error)
   sqrt(mean(error^2,na.rm=TRUE))
 }
 
+options(shiny.reactlog=TRUE) 
+
 # User interface ----
 
-ui <- fluidPage(theme = shinytheme("superhero"),
-  fluidRow(
-    column(3,
+ui <- navbarPage(title = "WAQA (Wood App For Quality Assurance)" , theme = shinytheme("superhero"),
+                 tabPanel('Home',
+                  fluidRow(         
+             column(3,
           
-            selectInput('selectfile','Select File',choice = list.files('Data/Flow Data/')),
+            selectInput('selectfile','Select File',choice = list.files('Data/Flow Data/'),selected = "CAR-070-Flow.csv"),
   
                         checkboxGroupInput("checkGroup", label = h3("Select Parameters for Timeseries plot"),
                                            c("Level (in)" = "Level_in",
@@ -57,16 +60,42 @@ ui <- fluidPage(theme = shinytheme("superhero"),
     ),
   column(9,
  plotlyOutput("plot"),
- plotlyOutput("plot2"))
+ plotlyOutput("plot2"),
+ plotlyOutput("plot3")
+ )
 
 
-))
+)),
+
+tabPanel('Compare',
+         fluidRow(
+           column(3,
+           selectInput('selectfile3','Select File',choice = list.files('Data/Flow Data')),
+           selectInput('selectfile4','Select File to compare',choice = list.files('Data/Flow Data')),#,selected = "CAR-072O-Flow.csv"),
+           
+           # input parameters
+           checkboxGroupInput("checkGroup2", label = h3("Select Parameters"),
+                              c("Level (in)" = "Level_in",
+                                "Level Clipped (in)" = "Level_in_clipped",
+                                "Flow (gpm)"="Flow..gpm.",
+                                "Flow (gpm) - no stormflow" ="Flow..gpm..no.stormflow",
+                                "Flow (gpm)- USBR" ="Flow..gpm..USBR"), 
+                              selected = "Level_in")
+             )
+           ), 
+           
+           column(9,  
+                     plotlyOutput("site_compare")
+         
+    )         
+  )
+)
 
 # Server logic ----
-server <- function(input, output) {
+server <- function(input, output, session) {
 
+  output$Home <-
   Flow.data <- reactive({
-    
     in.file <- input$selectfile
     txt.str= paste('Data/Flow Data/',in.file,sep = "")
     data= read.csv(txt.str)
@@ -121,7 +150,7 @@ server <- function(input, output) {
       # scale_color_manual(values = c("#FF00FF","#C0C0C0	","#800000	"	,"#808000	"	,"#008080	"))+
       #scale_color_manual(values = c(mypalette2)) + 
       labs(title=paste("Plotting site data for",site_id),
-           x ="Date", y = input$checkGroup)+
+           x ="Date", y = input$checkGroup2)+
       coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
     ggplotly(hydroplot)
   })
@@ -153,6 +182,28 @@ server <- function(input, output) {
     
   })
   
+  output$plot3 <- renderPlotly({
+    
+    calpoints=Calibration.data()
+    
+    
+    level.df <- calpoints %>%
+      select(Datetime,Level_in_clipped, Level_above_V_in_Before)
+    
+    error2 <-level.df$Level_above_V_in_Before- level.df$Level_in_clipped
+    
+    rmse.cal2=rmse(error2)
+    
+    
+    h <- ggplot(level.df, aes(x=Level_above_V_in_Before,y= Level_in_clipped, text= paste("Manual Level Measurement Date :", Datetime )))+
+      geom_point(color='aquamarine4')+geom_abline(intercept=0, slope= 1)+
+      labs(x="Level_above_V_in_Before", y="Level_in_clipped")+
+      geom_text(x = .6, y = .75,label=paste("RMSE:",rmse.cal2),parse = TRUE)
+    
+    
+    ggplotly(h)
+    
+  })
   
   output$mymap <- renderLeaflet({
     site_id=site_id()
@@ -171,6 +222,77 @@ server <- function(input, output) {
     })
     
   
+    
+    output$Compare <- 
+
+       Flow.data2 <- reactive({
+        
+        in.file <- input$selectfile3
+        txt.str= paste('Data/Flow Data/',in.file,sep = "")
+        data= read.csv(txt.str)
+        #data=in.file
+        
+        data$X=as.character(data$X)
+        data$date.time=as.POSIXct(strptime(data$X, format="%Y-%m-%d %H:%M:%S")) 
+        return(data)
+      })
+    
+    Flow.data3 <- reactive({
+      
+      in.file <- input$selectfile4
+      txt.str= paste('Data/Flow Data/',in.file,sep = "")
+      data= read.csv(txt.str)
+      #data=in.file
+      
+      data$X=as.character(data$X)
+      data$date.time=as.POSIXct(strptime(data$X, format="%Y-%m-%d %H:%M:%S")) 
+      return(data)
+    })
+      
+   
+      ranges2 <- reactiveValues(x = NULL, y = NULL)
+     
+      output$site_compare <-renderPlotly({
+       
+         Flow.plot.data2 =Flow.data2()
+        Flow.plot.data3 =Flow.data3()
+         
+         
+         
+         Flow.data.long2 <- reactive({
+           df4 <- Flow.plot.data2 %>%
+             select(date.time, input$checkGroup2) %>%
+             gather(key = "variable", value = "value", -date.time) 
+           return(df4)
+         })
+         
+         
+         Flow.data.long3 <- reactive({
+           df5 <- Flow.plot.data3 %>%
+             select(date.time, input$checkGroup2) %>%
+             gather(key = "variable", value = "value", -date.time) 
+           return(df5)
+         })
+      
+      df4=Flow.data.long2()
+      df5=Flow.data.long3()
+      
+      
+      hydroplot2<- ggplot(df4, aes(x = as.POSIXct(date.time), y = value)) + 
+      # scale_color_manual(values = c("#FF0000","#00FF00	","#0000FF"	,"#FFFF00"	,"#00FFFF"))+
+      geom_line(aes(color = variable), size = 1) +
+      # scale_color_brewer(palette="Dark2")
+      geom_line(data = df5, aes(x = as.POSIXct(date.time), y = value))+
+      geom_line(aes(color = "variable" ), size = 1)+
+      # scale_color_manual(values = c("#FF00FF","#C0C0C0	","#800000	"	,"#808000	"	,"#008080	"))+
+      #scale_color_manual(values = c(mypalette2)) + 
+      labs(title=paste("Plotting site data for",input$selectfile3,"and",input$selectfile4),
+           x ="Date", y = input$checkGroup2)+
+      coord_cartesian(xlim = ranges2$x, ylim = ranges2$y, expand = FALSE)
+   
+       ggplotly(hydroplot2)
+})
+
 }
 
 # Run app ----
