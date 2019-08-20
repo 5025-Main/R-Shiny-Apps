@@ -67,7 +67,7 @@ ui <- navbarPage(title = "WAQA (Wood App For Quality Assurance)" , theme = shiny
 
 )),
 
-tabPanel('Compare',
+tabPanel('Compare Sites',
          fluidRow(
            column(3,
            selectInput('selectfile3','Select File',choice = list.files('Data/Flow Data')),
@@ -223,7 +223,7 @@ server <- function(input, output, session) {
     
   
     
-    output$Compare <- 
+    output$'Compare Sites' <- 
 
        Flow.data2 <- reactive({
         
@@ -291,6 +291,10 @@ server <- function(input, output, session) {
       coord_cartesian(xlim = ranges2$x, ylim = ranges2$y, expand = FALSE)
    
        ggplotly(hydroplot2)
+       
+       
+     
+        
 })
 
 }
