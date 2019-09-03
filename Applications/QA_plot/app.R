@@ -78,8 +78,15 @@ server <- function(input, output) {
       geom_text(x = 1, y = 2,label=paste("RMSE:",rmse.cal),parse = TRUE)
     
     
-    ggplotly(g)
+    gg<- ggplotly(g)
     
+    
+    gg<-layout(
+      title = "Time Series with Custom Date-Time Format",
+      xaxis = list(
+        type = 'date',
+        tickformat = "%d %B (%a)<br>%Y"
+      ))
     
 })
 }

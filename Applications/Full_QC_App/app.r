@@ -6,12 +6,14 @@
 library(shiny)
 library(tidyr)
 library(dplyr)
+library(scales)
 library(ggplot2)
 library(plotly)
 library(leaflet)
 library(shinythemes)
 library(readxl)
 library(Metrics)
+
 
 
 r_colors <- rgb(t(col2rgb(colors()) / 255))
@@ -70,11 +72,11 @@ ui <- navbarPage(title = "WAQA (Wood App For Quality Assurance)" , theme = shiny
 tabPanel('Compare Sites',
          fluidRow(
            column(3,
-           selectInput('selectfile3','Select File',choice = list.files('Data/Flow Data')),
-           selectInput('selectfile4','Select File to compare',choice = list.files('Data/Flow Data')),#,selected = "CAR-072O-Flow.csv"),
+           selectInput('selectfile3','Select File',choice = list.files('Data/Flow Data'),selected = "CAR-072-Flow.csv"),
+           selectInput('selectfile4','Select File to compare',choice = list.files('Data/Flow Data'),selected = "CAR-072O-Flow.csv"),
            
            # input parameters
-           checkboxGroupInput("checkGroup2", label = h3("Select Parameters"),
+           checkboxGroupInput("checkGroup2", label = h3("Select a parameter to compare"),
                               c("Level (in)" = "Level_in",
                                 "Level Clipped (in)" = "Level_in_clipped",
                                 "Flow (gpm)"="Flow..gpm.",
@@ -121,11 +123,12 @@ server <- function(input, output, session) {
   site_id <- reactive({
     
     in.file <- input$selectfile
-    site_id=substr(in.file, 0, 7)
+    WtrD=sapply(strsplit(in.file, "-"), "[", 1)
+    site.num=sapply(strsplit(in.file, "-"), "[", 2)
+    site_id=paste(WtrD,"-",site.num,sep = "")
     return(site_id)
   })
   
- ranges <- reactiveValues(x = NULL, y = NULL)
   
   output$plot <- renderPlotly({
     Flow.plot.data=Flow.data() 
@@ -139,20 +142,28 @@ server <- function(input, output, session) {
     })
     
     df2=Flow.data.long()
-   
+  
+    
     # Multiple line plot
-   hydroplot<- ggplot(df2, aes(x = as.POSIXct(date.time), y = value)) + 
-      # scale_color_manual(values = c("#FF0000","#00FF00	","#0000FF"	,"#FFFF00"	,"#00FFFF"))+
-      geom_line(aes(color = variable), size = 1) +
-      # scale_color_brewer(palette="Dark2")
-      #geom_line(data = df3, aes(x = as.POSIXct(date.time), y = value))+
-      geom_line(aes(color = variable), size = 1)+
-      # scale_color_manual(values = c("#FF00FF","#C0C0C0	","#800000	"	,"#808000	"	,"#008080	"))+
-      #scale_color_manual(values = c(mypalette2)) + 
+   hydroplot<- ggplot(df2, aes(x = as.POSIXct(date.time), y = value, color = variable)) + 
+      geom_line()+
       labs(title=paste("Plotting site data for",site_id),
-           x ="Date", y = input$checkGroup2)+
-      coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
-    ggplotly(hydroplot)
+           x ="Date", y = input$checkGroup2)#+
+     #scale_x_datetime( labels=date_format ("%m/%d/%Y"),breaks=pretty_breaks(n=38))+
+    # theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+   # Multiple line plot
+  # hydroplot<- ggplot(df2, aes(x = as.POSIXct(date.time), y = value)) + 
+  #   geom_line(aes(color = variable), size = .5) +
+    # labs(title=paste("Plotting site data for",site_id),
+         # x ="Date", y = input$checkGroup2)#+
+   #scale_x_datetime( labels=date_format ("%m/%d/%Y"),breaks=pretty_breaks(n=38))+
+   # theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+   
+   hp<-ggplotly(hydroplot)
+  # hp <- layout(xaxis = list(type="auto", nticks=24,  tickformat="%m/%d/%Y", tickangle=-90))
+ 
   })
   
   
@@ -276,22 +287,67 @@ server <- function(input, output, session) {
       
       df4=Flow.data.long2()
       df5=Flow.data.long3()
-      
-      
+
       hydroplot2<- ggplot(df4, aes(x = as.POSIXct(date.time), y = value)) + 
       # scale_color_manual(values = c("#FF0000","#00FF00	","#0000FF"	,"#FFFF00"	,"#00FFFF"))+
       geom_line(aes(color = variable), size = 1) +
       # scale_color_brewer(palette="Dark2")
       geom_line(data = df5, aes(x = as.POSIXct(date.time), y = value))+
-      geom_line(aes(color = "variable" ), size = 1)+
+     # geom_line(aes(color = variable ), size = 1)+
       # scale_color_manual(values = c("#FF00FF","#C0C0C0	","#800000	"	,"#808000	"	,"#008080	"))+
       #scale_color_manual(values = c(mypalette2)) + 
       labs(title=paste("Plotting site data for",input$selectfile3,"and",input$selectfile4),
            x ="Date", y = input$checkGroup2)+
       coord_cartesian(xlim = ranges2$x, ylim = ranges2$y, expand = FALSE)
    
-       ggplotly(hydroplot2)
-       
+      site_1 <- reactive({
+        
+        in.file <- input$selectfile3
+        WtrD=sapply(strsplit(in.file, "-"), "[", 1)
+        site.num=sapply(strsplit(in.file, "-"), "[", 2)
+        site_id=paste(WtrD,"-",site.num,sep = "")
+        return(site_id)
+      })
+      
+      site_2 <- reactive({
+        
+        in.file <- input$selectfile4
+        WtrD=sapply(strsplit(in.file, "-"), "[", 1)
+        site.num=sapply(strsplit(in.file, "-"), "[", 2)
+        site_id=paste(WtrD,"-",site.num,sep = "")
+        return(site_id)
+      })
+      
+      f <- plot_ly(
+        type = "scatter",
+        x = df4$date.time, 
+        y = df4$value,
+        name = site_1(),
+        mode = "lines",
+        line = list(
+          color ='#17BECF' #df4$variable#'#17BECF',"green","yellow","red","orange"
+        )) %>%
+         add_trace(
+          type = "scatter",
+         x = df5$date.time, 
+         y = df5$value,
+         name = site_2(),
+         mode = "lines",
+         line = list(
+          color = '#7F7F7F'
+         )) #%>%
+       # layout(
+         # title = paste("Plotting site data for",site_1(),"and",site_2()),
+         # yaxis = "parameters",
+         # xaxis = "date")
+      
+      
+      
+      
+      
+      
+     # hp2<-ggplotly(hydroplot2)
+      hp2<-ggplotly(f)
        
      
         
