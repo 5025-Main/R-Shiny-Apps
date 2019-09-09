@@ -19,20 +19,9 @@ library(Metrics)
 r_colors <- rgb(t(col2rgb(colors()) / 255))
 names(r_colors) <- colors()
 
-#X2019_MS4_Sites <- read_excel("Data/2019_MS4 Sites.xlsx")
-
-sites.2019 <- read.csv("~/GitHub/R-Shiny-Apps/Applications/Full_QC_APP_V2/Data/2019_MS4_sites.csv")
 
 
-
-#sites.2019= sites.2019 [c(1:3)]
-#sites.2019=as.data.frame(sites.2019)
-
-#sites.2019$lng=sapply(strsplit(sites.2019$`ns1:coordinates`,","),"[",1)
-#sites.2019$lat=sapply(strsplit(sites.2019$`ns1:coordinates`,","),"[",2)
-
-#sites.2019$lng=as.numeric(sites.2019$lng)
-#sites.2019$lat=as.numeric(sites.2019$lat)
+sites.2019 <- read.csv("Data/2019_MS4_sites.csv")
 
 
 #rmse function
@@ -106,8 +95,8 @@ server <- function(input, output, session) {
     data= read.csv(txt.str)
     #data=in.file
     
-    data$X=as.character(data$X)
-    data$date.time=as.POSIXct(strptime(data$X, format="%Y-%m-%d %H:%M:%S")) 
+    #data$X=as.character(data$X)
+   # data$date.time=as.POSIXct(strptime(data$X, format="%Y-%m-%d %H:%M:%S")) 
     return(data)
     
   })
@@ -137,13 +126,22 @@ server <- function(input, output, session) {
     Flow.plot.data=Flow.data() 
     site_id=site_id()
    
-    Flow.data.long <- reactive({
-      df2 <- Flow.plot.data %>%
-        select(date.time, input$checkGroup) %>%
-        gather(key = "variable", value = "value", -date.time) 
-      return(df2)
-    })
+   # Flow.data.long <- reactive({
+     # df2 <- Flow.plot.data %>%
+       # select(date.time, input$checkGroup) %>%
+        #gather(key = "variable", value = "value", -date.time) 
+      #return(df2)
+    #})
     
+    
+    Flow.data.long <- reactive({
+        filtered.df=Flow.plot.data[Flow.plot.data$variable == c(input$checkGroup),]
+        return(filtered.df)
+      })
+  
+ # suy=CAR.015.Flow[.CAR.015.Flow$variable == c('Level_in','Level_in_clipped'),]# 'Level_in_clipped',]
+  
+
     df2=Flow.data.long()
   
     
@@ -184,6 +182,7 @@ server <- function(input, output, session) {
       error <-df3$Manual.meas- df3$Flow..gpm..no.stormflow
       
       rmse.cal=rmse(error)
+      rmse.cal=round(rmse.cal,digits=3)
       
       
       g <- ggplot(df3, aes(x=Flow..gpm..no.stormflow,y= Manual.meas, text= paste("Manual Measurement Date :", Datetime )))+
@@ -207,7 +206,7 @@ server <- function(input, output, session) {
     error2 <-level.df$Level_above_V_in_Before- level.df$Level_in_clipped
     
     rmse.cal2=rmse(error2)
-    
+    rmse.cal2=round(rmse.cal2,digits=3)
     
     h <- ggplot(level.df, aes(x=Level_above_V_in_Before,y= Level_in_clipped, text= paste("Manual Level Measurement Date :", Datetime )))+
       geom_point(color='aquamarine4')+geom_abline(intercept=0, slope= 1)+
@@ -246,8 +245,8 @@ server <- function(input, output, session) {
         data= read.csv(txt.str)
         #data=in.file
         
-        data$X=as.character(data$X)
-        data$date.time=as.POSIXct(strptime(data$X, format="%Y-%m-%d %H:%M:%S")) 
+       # data$X=as.character(data$X)
+        #data$date.time=as.POSIXct(strptime(data$X, format="%Y-%m-%d %H:%M:%S")) 
         return(data)
       })
     
@@ -258,8 +257,8 @@ server <- function(input, output, session) {
       data= read.csv(txt.str)
       #data=in.file
       
-      data$X=as.character(data$X)
-      data$date.time=as.POSIXct(strptime(data$X, format="%Y-%m-%d %H:%M:%S")) 
+      #data$X=as.character(data$X)
+      #data$date.time=as.POSIXct(strptime(data$X, format="%Y-%m-%d %H:%M:%S")) 
       return(data)
     })
       
@@ -274,34 +273,29 @@ server <- function(input, output, session) {
          
          
          Flow.data.long2 <- reactive({
-           df4 <- Flow.plot.data2 %>%
-             select(date.time, input$checkGroup2) %>%
-             gather(key = "variable", value = "value", -date.time) 
-           return(df4)
+           filtered.df=Flow.plot.data2[Flow.plot.data2$variable == c(input$checkGroup2),]
+           return(filtered.df)
          })
          
-         
          Flow.data.long3 <- reactive({
-           df5 <- Flow.plot.data3 %>%
-             select(date.time, input$checkGroup2) %>%
-             gather(key = "variable", value = "value", -date.time) 
-           return(df5)
+           filtered.df=Flow.plot.data3[Flow.plot.data2$variable == c(input$checkGroup2),]
+           return(filtered.df)
          })
       
       df4=Flow.data.long2()
       df5=Flow.data.long3()
 
-      hydroplot2<- ggplot(df4, aes(x = as.POSIXct(date.time), y = value)) + 
+      #hydroplot2<- ggplot(df4, aes(x = as.POSIXct(date.time), y = value)) + 
       # scale_color_manual(values = c("#FF0000","#00FF00	","#0000FF"	,"#FFFF00"	,"#00FFFF"))+
-      geom_line(aes(color = variable), size = 1) +
+      #geom_line(aes(color = variable), size = 1) +
       # scale_color_brewer(palette="Dark2")
-      geom_line(data = df5, aes(x = as.POSIXct(date.time), y = value))+
+      #geom_line(data = df5, aes(x = as.POSIXct(date.time), y = value))+
      # geom_line(aes(color = variable ), size = 1)+
       # scale_color_manual(values = c("#FF00FF","#C0C0C0	","#800000	"	,"#808000	"	,"#008080	"))+
       #scale_color_manual(values = c(mypalette2)) + 
-      labs(title=paste("Plotting site data for",input$selectfile3,"and",input$selectfile4),
-           x ="Date", y = input$checkGroup2)+
-      coord_cartesian(xlim = ranges2$x, ylim = ranges2$y, expand = FALSE)
+      #labs(title=paste("Plotting site data for",input$selectfile3,"and",input$selectfile4),
+        #   x ="Date", y = input$checkGroup2)+
+      #coord_cartesian(xlim = ranges2$x, ylim = ranges2$y, expand = FALSE)
    
       site_1 <- reactive({
         

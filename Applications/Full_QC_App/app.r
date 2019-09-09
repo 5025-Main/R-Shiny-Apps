@@ -181,6 +181,7 @@ server <- function(input, output, session) {
       error <-df3$Manual.meas- df3$Flow..gpm..no.stormflow
       
       rmse.cal=rmse(error)
+      rmse.cal=round(rmse.cal,digits=3)
       
       
       g <- ggplot(df3, aes(x=Flow..gpm..no.stormflow,y= Manual.meas, text= paste("Manual Measurement Date :", Datetime )))+
