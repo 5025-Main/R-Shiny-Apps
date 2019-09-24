@@ -145,7 +145,7 @@ server <- function(input, output, session) {
     df2=Flow.data.long()
   
     
-    # Multiple line plot
+    #Hydrograph plot with options to add on multiple parameters 
    hydroplot<- ggplot(df2, aes(x = as.POSIXct(date.time), y = value, color = variable)) + 
       geom_line()+
       labs(title=paste("Plotting site data for",site_id),
@@ -162,7 +162,7 @@ server <- function(input, output, session) {
    # theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
    
-   hp<-ggplotly(hydroplot)
+   hp<-ggplotly(hydroplot,dynamicTicks = TRUE)
   # hp <- layout(xaxis = list(type="auto", nticks=24,  tickformat="%m/%d/%Y", tickangle=-90))
  
   })
@@ -191,7 +191,7 @@ server <- function(input, output, session) {
         geom_text(x = 1, y = 2,label=paste("RMSE:",rmse.cal),parse = TRUE)
       
       
-      ggplotly(g)
+      ggplotly(g,dynamicTicks = TRUE)
     
   })
   
@@ -214,7 +214,7 @@ server <- function(input, output, session) {
       geom_text(x = .6, y = .75,label=paste("RMSE:",rmse.cal2),parse = TRUE)
     
     
-    ggplotly(h)
+    ggplotly(h,dynamicTicks = TRUE)
     
   })
   
@@ -285,16 +285,16 @@ server <- function(input, output, session) {
       df4=Flow.data.long2()
       df5=Flow.data.long3()
 
-      #hydroplot2<- ggplot(df4, aes(x = as.POSIXct(date.time), y = value)) + 
+      hydroplot2<- ggplot(df4, aes(x = as.POSIXct(date.time), y = value)) + 
       # scale_color_manual(values = c("#FF0000","#00FF00	","#0000FF"	,"#FFFF00"	,"#00FFFF"))+
-      #geom_line(aes(color = variable), size = 1) +
+      geom_line(aes(color = variable), size = 1) +
       # scale_color_brewer(palette="Dark2")
-      #geom_line(data = df5, aes(x = as.POSIXct(date.time), y = value))+
-     # geom_line(aes(color = variable ), size = 1)+
+      geom_line(data = df5, aes(x = as.POSIXct(date.time), y = value))+
+      geom_line(aes(color = variable ), size = 1)+
       # scale_color_manual(values = c("#FF00FF","#C0C0C0	","#800000	"	,"#808000	"	,"#008080	"))+
       #scale_color_manual(values = c(mypalette2)) + 
-      #labs(title=paste("Plotting site data for",input$selectfile3,"and",input$selectfile4),
-        #   x ="Date", y = input$checkGroup2)+
+      labs(title=paste("Plotting site data for",input$selectfile3,"and",input$selectfile4),
+           x ="Date", y = input$checkGroup2)
       #coord_cartesian(xlim = ranges2$x, ylim = ranges2$y, expand = FALSE)
    
       site_1 <- reactive({
@@ -322,7 +322,7 @@ server <- function(input, output, session) {
         name = site_1(),
         mode = "lines",
         line = list(
-          color ='#17BECF' #df4$variable#'#17BECF',"green","yellow","red","orange"
+          color =df4$variable #df4$variable#'#17BECF',"green","yellow","red","orange"
         )) %>%
          add_trace(
           type = "scatter",
@@ -332,19 +332,19 @@ server <- function(input, output, session) {
          mode = "lines",
          line = list(
           color = '#7F7F7F'
-         )) #%>%
-       # layout(
-         # title = paste("Plotting site data for",site_1(),"and",site_2()),
-         # yaxis = "parameters",
-         # xaxis = "date")
+         )) %>%
+        layout(
+          title = paste("Plotting site data for",site_1(),"and",site_2()),
+          yaxis = list(title=c(input$checkGroup2)),
+          xaxis = list(title="date"))
       
       
       
       
       
       
-     # hp2<-ggplotly(hydroplot2)
-      hp2<-ggplotly(f)
+     # hp2<-ggplotly(hydroplot2,dynamicTicks = TRUE)
+      hp2<-ggplotly(f,dynamicTicks = TRUE)
        
      
         
