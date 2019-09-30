@@ -34,7 +34,7 @@ options(shiny.reactlog=TRUE)
 
 # User interface ----
 
-ui <- navbarPage(title = "WAQA (Wood App For Quality Assurance)" , theme = shinytheme("superhero"),
+ui <- navbarPage(title = "WAQA (Wood App For Quality Assurance)" , theme = shinytheme("slate"),
                  tabPanel('Home',
                   fluidRow(         
              column(3,
@@ -101,16 +101,7 @@ server <- function(input, output, session) {
     
   })
   
-  Calibration.data <- reactive({
-    
-    in.file <- input$selectfile
-    site_id=substr(in.file, 0, 7)
-    
-    txt.str= paste('Data/Compiled Calibrations/',site_id,'-compiled.csv',sep = "")
-    data= read.csv(txt.str)
-    
-    return(data)
-  })
+ 
   
   site_id <- reactive({
     
@@ -121,6 +112,18 @@ server <- function(input, output, session) {
     return(site_id)
   })
   
+  
+  Calibration.data <- reactive({
+    
+    in.file <- input$selectfile
+    #site_id=substr(in.file, 0, 7)
+    site_id=site_id()
+    
+    txt.str= paste('Data/Compiled Calibrations/',site_id,'-compiled.csv',sep = "")
+    data= read.csv(txt.str)
+    
+    return(data)
+  })
   
   output$plot <- renderPlotly({
     Flow.plot.data=Flow.data() 
