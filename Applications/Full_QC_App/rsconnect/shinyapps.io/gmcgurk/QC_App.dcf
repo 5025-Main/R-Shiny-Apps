@@ -1,0 +1,12 @@
+name: QC_App
+title: QC_App
+username:
+account: gmcgurk
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1078136
+bundleId: 2389023
+url: https://gmcgurk.shinyapps.io/QC_App/
+when: 1567708479.75524
+asMultiple: FALSE
+asStatic: FALSE
